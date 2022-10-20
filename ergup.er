@@ -1,0 +1,14 @@
+urllib = pyimport "urllib"
+tf = pyimport "tarfile"
+json = pyimport "json"
+
+latest_url = "https://api.github.com/repos/erg-lang/erg/releases/latest"
+_stream = urllib.request.urlopen!(latest_url)
+s = _stream.read!().decode()
+jdata = json.loads s
+assert jdata in {Str: Str}
+latest_version = jdata["tag_name"]
+url = "https://github.com/erg-lang/erg/releases/download/" + latest_version + "/erg-x86_64-unknown-linux-gnu.tar.gz"
+stream = urllib.request.urlopen!(url)
+thetarfile = tf.open!(fileobj:=stream, mode:="r|gz")
+thetarfile.extractall!()
