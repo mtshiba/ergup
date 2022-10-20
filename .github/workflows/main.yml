@@ -11,5 +11,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Build
-      run: python3 --version
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    - run: |
+        python ergup.pyc
+
+        export PATH=$PATH:~/.erg/bin
+        export ERG_PATH=~/.erg
+
+        echo 'print! "hello, world!"' | erg
