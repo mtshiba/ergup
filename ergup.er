@@ -1,6 +1,7 @@
 urllib = pyimport "urllib"
 tf = pyimport "tarfile"
 json = pyimport "json"
+os = pyimport "os"
 
 latest_url = "https://api.github.com/repos/erg-lang/erg/releases/latest"
 _stream = urllib.request.urlopen!(latest_url)
@@ -8,7 +9,19 @@ s = _stream.read!().decode()
 jdata = json.loads s
 assert jdata in {Str: Str}
 latest_version = jdata["tag_name"]
-url = "https://github.com/erg-lang/erg/releases/download/" + latest_version + "/erg-x86_64-unknown-linux-gnu.tar.gz"
+
+filename = "erg-x86_64-unknown-linux-gnu.tar.gz"
+url = "https://github.com/erg-lang/erg/releases/download/" + latest_version + "/" + filename
 stream = urllib.request.urlopen!(url)
-thetarfile = tf.open!(fileobj:=stream, mode:="r|gz")
-thetarfile.extractall!()
+tarfile = tf.open!(fileobj:=stream, mode:="r|gz")
+tarfile.extractall!()
+
+os.remove! filename
+
+os.mkdir! ".erg"
+os.mkdir! ".erg/bin"
+os.chdir! ".erg"
+os.rename! "../lib", "lib"
+os.rename! "../erg", "bin/erg"
+
+print! "please add `.erg` to your PATH by running `export PATH=$PATH:~/.erg/bin` and `export ERG_PATH=~/.erg`"
