@@ -4,6 +4,10 @@
 
 Python 3.10+
 
+## support platform
+
+* Linux x86_64
+
 ## usage
 
 ```console
