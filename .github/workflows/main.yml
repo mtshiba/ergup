@@ -17,7 +17,11 @@ jobs:
     - run: |
         python ergup.py
 
-        export PATH=$PATH:~/.erg/bin
-        export ERG_PATH=~/.erg
+        export PATH=$PATH:.erg/bin
+        export ERG_PATH=.erg
+
+        ls
+        ls .erg
+        ls .erg/bin
 
         echo 'print! "hello, world!"' | erg
