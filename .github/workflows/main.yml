@@ -15,7 +15,7 @@ jobs:
       with:
         python-version: '3.10'
     - run: |
-        python ergup.pyc
+        python ergup.py
 
         export PATH=$PATH:~/.erg/bin
         export ERG_PATH=~/.erg
