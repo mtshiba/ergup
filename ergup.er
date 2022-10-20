@@ -15,6 +15,7 @@ url = "https://github.com/erg-lang/erg/releases/download/" + latest_version + "/
 stream = urllib.request.urlopen!(url)
 tarfile = tf.open!(fileobj:=stream, mode:="r|gz")
 tarfile.extractall!()
+tarfile.close!()
 
 os.remove! filename
 
