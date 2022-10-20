@@ -16,7 +16,7 @@ stream = urllib.request.urlopen!(url)
 tarfile = tf.open!(fileobj:=stream, mode:="r|gz")
 tarfile.extractall!()
 
-# os.remove! filename
+os.remove! filename
 
 os.mkdir! ".erg"
 os.mkdir! ".erg/bin"
