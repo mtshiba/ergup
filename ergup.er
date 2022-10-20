@@ -1,7 +1,11 @@
 urllib = pyimport "urllib"
 tf = pyimport "tarfile"
+zf = pyimport "zipfile"
 json = pyimport "json"
+sys = pyimport "sys"
 os = pyimport "os"
+io = pyimport "io"
+su = pyimport "shutil"
 
 latest_url = "https://api.github.com/repos/erg-lang/erg/releases/latest"
 _stream = urllib.request.urlopen!(latest_url)
@@ -10,19 +14,38 @@ jdata = json.loads s
 assert jdata in {Str: Str}
 latest_version = jdata["tag_name"]
 
-filename = "erg-x86_64-unknown-linux-gnu.tar.gz"
+print! "version: " + latest_version
+
+filename = if sys.platform == "darwin":
+    do "erg-x86_64-apple-darwin.tar.gz"
+    do if sys.platform == "win32":
+        do "erg-x86_64-pc-windows-msvc.zip"
+        do "erg-x86_64-unknown-linux-gnu.tar.gz"
 url = "https://github.com/erg-lang/erg/releases/download/" + latest_version + "/" + filename
+
+print! "downloading " + url + " ..."
+
+homedir = os.path.expanduser! "~"
+os.mkdir! homedir + "/.erg"
+os.mkdir! homedir + "/.erg/bin"
+
 stream = urllib.request.urlopen!(url)
-tarfile = tf.open!(fileobj:=stream, mode:="r|gz")
-tarfile.extractall!()
-tarfile.close!()
+if! sys.platform == "win32":
+    do!:
+        bytesio = io.newBytesIO stream.read!()
+        zipfile = zf.open! bytesio
+        print! "extracting " + filename + " ..."
+        zipfile.extractall!()
+        zipfile.close!()
+        su.move! "erg.exe",  homedir + "/.erg/bin/erg.exe"
+        su.move! "lib", homedir + "/.erg/lib"
+    do!:
+        tarfile = tf.open!(fileobj:=stream, mode:="r|gz")
+        print! "extracting " + filename + " ..."
+        tarfile.extractall!()
+        tarfile.close!()
+        os.chdir! ".erg"
+        os.rename! "../lib", homedir + "/lib"
+        os.rename! "../erg", homedir + "/bin/erg"
 
-# os.remove! filename
-
-os.mkdir! ".erg"
-os.mkdir! ".erg/bin"
-os.chdir! ".erg"
-os.rename! "../lib", "lib"
-os.rename! "../erg", "bin/erg"
-
-print! "please add `.erg` to your PATH by running `export PATH=$PATH:~/.erg/bin` and `export ERG_PATH=~/.erg`"
+print! "please add `.erg` to your PATH by running `export PATH=$PATH:" + homedir + "/.erg/bin` and `export ERG_PATH=" + homedir + "/.erg`"
