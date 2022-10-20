@@ -32,20 +32,19 @@ os.mkdir! homedir + "/.erg/bin"
 stream = urllib.request.urlopen!(url)
 if! sys.platform == "win32":
     do!:
+        print! "extracting " + filename + " ..."
         bytesio = io.newBytesIO stream.read!()
         zipfile = zf.open! bytesio
-        print! "extracting " + filename + " ..."
         zipfile.extractall!()
         zipfile.close!()
-        su.move! "erg.exe",  homedir + "/.erg/bin/erg.exe"
+        su.move! "erg.exe", homedir + "/.erg/bin/erg.exe"
         su.move! "lib", homedir + "/.erg/lib"
     do!:
-        tarfile = tf.open!(fileobj:=stream, mode:="r|gz")
         print! "extracting " + filename + " ..."
+        tarfile = tf.open!(fileobj:=stream, mode:="r|gz")
         tarfile.extractall!()
         tarfile.close!()
-        os.chdir! ".erg"
-        os.rename! "../lib", homedir + "/lib"
-        os.rename! "../erg", homedir + "/bin/erg"
+        su.move! "erg", homedir + "/.erg/bin/erg"
+        su.move! "lib", homedir + "/.erg/lib"
 
 print! "please add `.erg` to your PATH by running `export PATH=$PATH:" + homedir + "/.erg/bin` and `export ERG_PATH=" + homedir + "/.erg`"
