@@ -15,13 +15,9 @@ jobs:
       with:
         python-version: '3.10'
     - run: |
-        python ergup.py
+        python ergup.pyc
 
         export PATH=$PATH:.erg/bin
         export ERG_PATH=.erg
-
-        ls
-        ls .erg
-        ls .erg/bin
 
         echo 'print! "hello, world!"' | erg
