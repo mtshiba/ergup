@@ -16,11 +16,10 @@ latest_version = jdata["tag_name"]
 
 print! "version: " + latest_version
 
-filename = if sys.platform == "darwin":
-    do "erg-x86_64-apple-darwin.tar.gz"
-    do if sys.platform == "win32":
-        do "erg-x86_64-pc-windows-msvc.zip"
-        do "erg-x86_64-unknown-linux-gnu.tar.gz"
+filename = match sys.platform:
+    "darwin" -> "erg-x86_64-apple-darwin.tar.gz"
+    "win32" -> "erg-x86_64-pc-windows-msvc.zip"
+    _ -> "erg-x86_64-unknown-linux-gnu.tar.gz"
 url = "https://github.com/erg-lang/erg/releases/download/" + latest_version + "/" + filename
 
 print! "downloading " + url + " ..."
