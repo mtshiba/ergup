@@ -2,13 +2,13 @@
 
 ## requirement
 
-Python 3.10+
+Python 3
 
 ## supported platforms
 
 * Linux x86_64
 * Windows x86_64
-* (MacOS) x86_64, aaarch64 (not tested)
+* (MacOS) x86_64, aarch64 (not tested)
 
 ## usage
 
