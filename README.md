@@ -4,10 +4,11 @@
 
 Python 3.10+
 
-## support platform
+## supported platforms
 
 * Linux x86_64
 * Windows x86_64
+* (MacOS) x86_64, aaarch64 (not )
 
 ## usage
 
