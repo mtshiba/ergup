@@ -12,8 +12,8 @@ Python 3.10+
 ## usage
 
 ```console
-curl -O -L https://github.com/mtshiba/ergup/raw/main/ergup.pyc
-python3 ergup.pyc
+curl -O -L https://github.com/mtshiba/ergup/raw/main/bin/ergup`python -c "import sys; print('%d%d' % (sys.version_info.major, sys.version_info.minor))"`.pyc || echo not supported python version
+python3 ergup`python -c "import sys; print('%d%d' % (sys.version_info.major, sys.version_info.minor))"`.pyc
 
 # please set envs
 export PATH=$PATH:.erg/bin
