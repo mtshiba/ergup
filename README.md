@@ -8,13 +8,14 @@ Python 3.10+
 
 * Linux x86_64
 * Windows x86_64
-* (MacOS) x86_64, aaarch64 (not )
+* (MacOS) x86_64, aaarch64 (not tested)
 
 ## usage
 
 ```console
-curl -O -L https://github.com/mtshiba/ergup/raw/main/bin/ergup`python -c "import sys; print('%d%d' % (sys.version_info.major, sys.version_info.minor))"`.pyc || echo not supported python version
-python3 ergup`python -c "import sys; print('%d%d' % (sys.version_info.major, sys.version_info.minor))"`.pyc
+filename=ergup`python -c "import sys; print('%d%d' % (sys.version_info.major, sys.version_info.minor))"`.pyc
+curl -O -L https://github.com/mtshiba/ergup/raw/main/bin/$filename
+grep -q "404" $filename && echo "not supported python version" || python3 $filename
 
 # please set envs
 export PATH=$PATH:.erg/bin
