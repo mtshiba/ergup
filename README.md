@@ -14,11 +14,6 @@ Python 3
 
 ```sh
 # If the Python command is registered as `python` in your environment, replace the `python3` part.
-filename=ergup`python3 -c "import sys; print('%d%d' % (sys.version_info.major, sys.version_info.minor))"`.pyc
-curl -O -L https://github.com/mtshiba/ergup/raw/main/bin/$filename
-grep -q "404" $filename && echo "not supported python version" || python3 $filename
-
-# please set envs
-export PATH=$PATH:.erg/bin
-export ERG_PATH=.erg
+curl -L https://github.com/mtshiba/ergup/raw/main/ergup.py | python3
+# and please set environment variables
 ```
