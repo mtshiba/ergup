@@ -229,23 +229,6 @@ def match_tmp_func_1__():
     return match_tmp_0__
 os__ = __import__("os.path")
 urllib__ = __import__("urllib.request")
-def if_tmp_func_3__():
-    if ((sys__).platform == "win32"):
-        (print)((("extracting " + filename__) + " ..."),)
-        bytesio__ = (io__).BytesIO((stream__).read(),)
-        zipfile__ = (zf__).ZipFile(bytesio__,)
-        (zipfile__).extractall()
-        (zipfile__).close()
-        (su__).move("erg.exe",(homedir__ + "/.erg/bin/erg.exe"),)
-        if_tmp_2__ = (su__).move("lib",(homedir__ + "/.erg/lib"),)
-    else:
-        (print)((("extracting " + filename__) + " ..."),)
-        tarfile__ = (tf__).open(fileobj__=stream__,mode__="r|gz",)
-        (tarfile__).extractall()
-        (tarfile__).close()
-        (su__).move("erg",(homedir__ + "/.erg/bin/erg"),)
-        if_tmp_2__ = (su__).move("lib",(homedir__ + "/.erg/lib"),)
-    return if_tmp_2__
 urllib__ = (__import__)("urllib",)
 tf__ = (__import__)("tarfile",)
 zf__ = (__import__)("zipfile",)
@@ -274,5 +257,19 @@ homedir__ = (
 stream__ = (
     (urllib__).request
     ).urlopen(url__,)
-if_tmp_func_3__()
+if ((sys__).platform == "win32"):
+    (print)((("extracting " + filename__) + " ..."),)
+    bytesio__ = (io__).BytesIO((stream__).read(),)
+    zipfile__ = (zf__).ZipFile(bytesio__,)
+    (zipfile__).extractall()
+    (zipfile__).close()
+    (su__).move("erg.exe",(homedir__ + "/.erg/bin/erg.exe"),)
+    if_tmp_2__ = (su__).move("lib",(homedir__ + "/.erg/lib"),)
+else:
+    (print)((("extracting " + filename__) + " ..."),)
+    tarfile__ = (tf__).open(fileobj__=stream__,mode__="r|gz",)
+    (tarfile__).extractall()
+    (tarfile__).close()
+    (su__).move("erg",(homedir__ + "/.erg/bin/erg"),)
+    if_tmp_2__ = (su__).move("lib",(homedir__ + "/.erg/lib"),)
 (print)((((("please add `.erg` to your PATH by running `export PATH=$PATH:" + homedir__) + "/.erg/bin` and `export ERG_PATH=") + homedir__) + "/.erg`"),)
