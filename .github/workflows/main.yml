@@ -1,20 +1,25 @@
-name: Rust
+name: CI
 
 on:
   push:
     branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  build:
-
-    runs-on: ubuntu-latest
-
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
-    - run: |
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Execute the script
+      - run: |
         python bin/ergup310.pyc && rm -rf ~/.erg && python ergup.py
 
         export PATH=$PATH:~/.erg/bin
