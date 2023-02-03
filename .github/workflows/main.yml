@@ -30,9 +30,9 @@ jobs:
       - name: Execute the script (Windows)
         if: runner.os == 'Windows'
         run: |
-          python bin/ergup310.pyc && Remove-Item -Force -Recurse %USERPROFILE%\.erg && python ergup.py
+          python bin/ergup310.pyc && Remove-Item -Force -Recurse C:\Users\runneradmin\.erg && python ergup.py
 
-          $env:PATH+=";%USERPROFILE%\.erg\bin"
-          $env:ERG_PATH="%USERPROFILE%\.erg"
+          $env:PATH+=";C:\Users\runneradmin\.erg\bin"
+          $env:ERG_PATH="C:\Users\runneradmin\.erg"
 
           echo 'print! "hello, world!"' | erg
