@@ -19,10 +19,10 @@ jobs:
         with:
           python-version: "3.10"
       - name: Execute the script
-      - run: |
-        python bin/ergup310.pyc && rm -rf ~/.erg && python ergup.py
+        run: |
+          python bin/ergup310.pyc && rm -rf ~/.erg && python ergup.py
 
-        export PATH=$PATH:~/.erg/bin
-        export ERG_PATH=~/.erg
+          export PATH=$PATH:~/.erg/bin
+          export ERG_PATH=~/.erg
 
-        echo 'print! "hello, world!"' | erg
+          echo 'print! "hello, world!"' | erg
