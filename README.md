@@ -8,7 +8,7 @@ Python 3
 
 * Linux x86_64
 * Windows x86_64
-* (MacOS) x86_64, aarch64 (not tested)
+* MacOS x86_64, aarch64
 
 ## usage
 
