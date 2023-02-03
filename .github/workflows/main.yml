@@ -1,23 +1,38 @@
-name: Rust
+name: CI
 
 on:
   push:
     branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  build:
-
-    runs-on: ubuntu-latest
-
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
-    - run: |
-        python bin/ergup310.pyc && rm -rf ~/.erg && python ergup.py
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Execute the script (Ubuntu/MacOS)
+        if: runner.os != 'Windows'
+        run: |
+          python bin/ergup310.pyc && rm -rf ~/.erg && python ergup.py
 
-        export PATH=$PATH:~/.erg/bin
-        export ERG_PATH=~/.erg
+          export PATH=$PATH:~/.erg/bin
+          export ERG_PATH=~/.erg
 
-        echo 'print! "hello, world!"' | erg
+          echo 'print! "hello, world!"' | erg
+      - name: Execute the script (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          python bin/ergup310.pyc && Remove-Item -Force -Recurse C:\Users\runneradmin\.erg && python ergup.py
+
+          $env:PATH+=";C:\Users\runneradmin\.erg\bin"
+          $env:ERG_PATH="C:\Users\runneradmin\.erg"
+
+          echo 'print! "hello, world!"' | erg
