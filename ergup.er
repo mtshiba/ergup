@@ -7,6 +7,25 @@ os = pyimport "os"
 io = pyimport "io"
 su = pyimport "shutil"
 
+homedir = os.path.expanduser! "~"
+erg_dir = homedir + "/.erg"
+erg_bin_dir = homedir + "/.erg/bin"
+erg_tmp_dir = homedir + "/.erg/tmp"
+
+if! os.path.exists!(erg_dir), do!:
+    print! ".erg directory already exists, do you want to overwrite it? [y/n]", end:=" "
+    answer = input!()
+    if! answer == "y":
+        do!:
+            print! "removing \{erg_dir} ..."
+            su.rmtree! erg_dir
+        do!:
+            print! "aborting installation"
+            exit 1
+
+os.mkdir! erg_dir
+os.mkdir! erg_bin_dir
+
 latest_url = "https://api.github.com/repos/erg-lang/erg/releases/latest"
 _stream = urllib.request.urlopen!(latest_url)
 s = _stream.read!().decode()
@@ -14,38 +33,34 @@ jdata = json.loads s
 assert jdata in {Str: Str}
 latest_version = jdata["tag_name"]
 
-print! "version: " + latest_version
+print! "version: \{latest_version}"
 
 filename = match sys.platform:
     "darwin" -> "erg-x86_64-apple-darwin.tar.gz"
     "win32" -> "erg-x86_64-pc-windows-msvc.zip"
     _ -> "erg-x86_64-unknown-linux-gnu.tar.gz"
-url = "https://github.com/erg-lang/erg/releases/download/" + latest_version + "/" + filename
+url = "https://github.com/erg-lang/erg/releases/download/\{latest_version}/\{filename}"
 
-print! "downloading " + url + " ..."
-
-homedir = os.path.expanduser! "~"
-os.mkdir! homedir + "/.erg"
-os.mkdir! homedir + "/.erg/bin"
+print! "downloading \{url} ..."
 
 stream = urllib.request.urlopen!(url)
 if! sys.platform == "win32":
     do!:
-        print! "extracting " + filename + " ..."
+        print! "extracting \{filename} ..."
         bytesio = io.newBytesIO stream.read!()
         zipfile = zf.open! bytesio
-        zipfile.extractall! homedir + "/.erg/tmp"
+        zipfile.extractall! erg_tmp_dir
         zipfile.close!()
-        su.move! homedir + "/.erg/tmp/erg.exe", homedir + "/.erg/bin/erg.exe"
-        su.move! homedir + "/.erg/tmp/lib", homedir + "/.erg/lib"
-        su.rmtree! homedir + "/.erg/tmp"
+        su.move! "\{erg_tmp_dir}/erg.exe", "\{erg_bin_dir}/erg.exe"
+        su.move! "\{erg_tmp_dir}/lib", "\{erg_dir}/lib"
+        su.rmtree! erg_tmp_dir
     do!:
-        print! "extracting " + filename + " ..."
+        print! "extracting \{filename} ..."
         tarfile = tf.open!(fileobj:=stream, mode:="r|gz")
-        tarfile.extractall! homedir + "/.erg/tmp"
+        tarfile.extractall! erg_tmp_dir
         tarfile.close!()
-        su.move! homedir + "/.erg/tmp/erg", homedir + "/.erg/bin/erg"
-        su.move! homedir + "/.erg/tmp/lib", homedir + "/.erg/lib"
-        su.rmtree! homedir + "/.erg/tmp"
+        su.move! "\{erg_tmp_dir}/erg", "\{erg_bin_dir}/erg"
+        su.move! "\{erg_tmp_dir}/lib", "\{erg_dir}/lib"
+        su.rmtree! erg_tmp_dir
 
-print! "please add `.erg` to your PATH by running `export PATH=$PATH:" + homedir + "/.erg/bin` and `export ERG_PATH=" + homedir + "/.erg`"
+print! "please add `.erg` to your PATH by running `export PATH=$PATH:\{erg_bin_dir}` and `export ERG_PATH=\{erg_dir}`"

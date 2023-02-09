@@ -255,6 +255,7 @@ class NatMut(IntMut): # and Nat
 
 
 
+
 class Bool(Nat):
     def try_new(b: bool): # -> Result[Nat]
         if b == True or b == False:
@@ -269,6 +270,30 @@ class Bool(Nat):
             return "False"
     def __repr__(self) -> str:
         return self.__str__()
+    def mutate(self):
+        return BoolMut(self)
+    def invert(self):
+        return Bool(not self)
+
+class BoolMut(NatMut):
+    value: Bool
+
+    def __init__(self, b: Bool):
+        self.value = b
+    def __repr__(self):
+        return self.value.__repr__()
+    def __eq__(self, other):
+        if isinstance(other, bool):
+            return self.value == other
+        else:
+            return self.value == other.value
+    def __ne__(self, other):
+        if isinstance(other, bool):
+            return self.value != other
+        else:
+            return self.value != other.value
+    def invert(self):
+        self.value = self.value.invert()
 
 
 
@@ -290,6 +315,8 @@ class Str(str):
         return StrMut(self)
     def to_int(self):
         return Int(self) if self.isdigit() else None
+    def contains(self, s):
+        return s in self
     def __add__(self, other):
         return then__(str.__add__(self, other), Str)
     def __radd__(self, other):
@@ -340,14 +367,166 @@ class StrMut(): # Inherits Str
         return char
     def insert(self, idx: int, s: str):
         self.value = self.value[:idx] + s + self.value[idx:]
+
+
+
+class Float(float):
+    def try_new(i): # -> Result[Nat]
+        if isinstance(i, float):
+            Float(i)
+        else:
+            Error("not a float")
+    def mutate(self):
+        return FloatMut(self)
+    def __add__(self, other):
+        return then__(float.__add__(self, other), Float)
+    def __radd__(self, other):
+        return then__(float.__add__(float(other), self), Float)
+    def __sub__(self, other):
+        return then__(float.__sub__(self, other), Float)
+    def __rsub__(self, other):
+        return then__(float.__sub__(float(other), self), Float)
+    def __mul__(self, other):
+        return then__(float.__mul__(self, other), Float)
+    def __rmul__(self, other):
+        return then__(float.__mul__(float(other), self), Float)
+    def __div__(self, other):
+        return then__(float.__div__(self, other), Float)
+    def __rdiv__(self, other):
+        return then__(float.__div__(float(other), self), Float)
+    def __floordiv__(self, other):
+        return then__(float.__floordiv__(self, other), Float)
+    def __rfloordiv__(self, other):
+        return then__(float.__floordiv__(float(other), self), Float)
+    def __pow__(self, other):
+        return then__(float.__pow__(self, other), Float)
+    def __rpow__(self, other):
+        return then__(float.__pow__(float(other), self), Float)
+
+class FloatMut(): # inherits Float
+    value: Float
+
+    def __init__(self, i):
+        self.value = Float(i)
+    def __repr__(self):
+        return self.value.__repr__()
+    def __deref__(self):
+        return self.value
+    def __eq__(self, other):
+        if isinstance(other, Float):
+            return self.value == other
+        else:
+            return self.value == other.value
+    def __ne__(self, other):
+        if isinstance(other, Float):
+            return self.value != other
+        else:
+            return self.value != other.value
+    def __le__(self, other):
+        if isinstance(other, Float):
+            return self.value <= other
+        else:
+            return self.value <= other.value
+    def __ge__(self, other):
+        if isinstance(other, Float):
+            return self.value >= other
+        else:
+            return self.value >= other.value
+    def __lt__(self, other):
+        if isinstance(other, Float):
+            return self.value < other
+        else:
+            return self.value < other.value
+    def __gt__(self, other):
+        if isinstance(other, Float):
+            return self.value > other
+        else:
+            return self.value > other.value
+    def __add__(self, other):
+        if isinstance(other, Float):
+            return FloatMut(self.value + other)
+        else:
+            return FloatMut(self.value + other.value)
+    def __sub__(self, other):
+        if isinstance(other, Float):
+            return FloatMut(self.value - other)
+        else:
+            return FloatMut(self.value - other.value)
+    def __mul__(self, other):
+        if isinstance(other, Float):
+            return FloatMut(self.value * other)
+        else:
+            return FloatMut(self.value * other.value)
+    def __floordiv__(self, other):
+        if isinstance(other, Float):
+            return FloatMut(self.value // other)
+        else:
+            return FloatMut(self.value // other.value)
+    def __pow__(self, other):
+        if isinstance(other, Float):
+            return FloatMut(self.value ** other)
+        else:
+            return FloatMut(self.value ** other.value)
 class Array(list):
-    def dedup(self):
-        return Array(list(set(self)))
-    def dedup_by(self, f):
-        return Array(list(set(map(f, self))))
+    def dedup(self, f=None):
+        if f == None:
+            return Array(list(set(self)))
+        else:
+            return Array(list(set(map(f, self))))
     def push(self, value):
         self.append(value)
         return self
+    def partition(self, f):
+        return Array(list(filter(f, self))), Array(list(filter(lambda x: not f(x), self)))
+os__ = __import__("os.path")
+os__ = __import__("os.path")
+
+
+
+
+
+def int__(i):
+    try:
+        return Int(i)
+    except:
+        return None
+
+def nat__(i):
+    try:
+        return Nat(i)
+    except:
+        return None
+
+def float__(f):
+    try:
+        return Float(f)
+    except:
+        return None
+
+def str__(s):
+    try:
+        return Str(s)
+    except:
+        return None
+def if_tmp_func_3__():
+    if (answer__ == Str("y")):
+        (print)(((Str("removing ") + (str__)(erg_dir__,)) + Str(" ...")),)
+        if_tmp_2__ = (su__).rmtree(erg_dir__,)
+    else:
+        (print)(Str("aborting installation"),)
+        if_tmp_2__ = (exit)(Nat(1),)
+    return if_tmp_2__
+def if_tmp_func_1__():
+    if (
+(os__).path
+).exists(erg_dir__,):
+        (print)(Str(".erg directory already exists, do you want to overwrite it? [y/n]"),end=Str(" "),)
+        global answer__
+        answer__ = (input)()
+        if_tmp_0__ = if_tmp_func_3__()
+    else:
+        if_tmp_0__ = None
+    return if_tmp_0__
 urllib__ = __import__("urllib.request")
 # from typing import TypeVar, Union, _SpecialForm, _type_check
 
@@ -487,36 +666,38 @@ def in_operator(x, y):
         return type_check and len_check
     else:
         return x in y
-def match_tmp_func_1__():
+def match_tmp_func_5__():
     match (sys__).platform:
         case "darwin":
-            match_tmp_0__ = Str("erg-x86_64-apple-darwin.tar.gz")
+            match_tmp_4__ = Str("erg-x86_64-apple-darwin.tar.gz")
         case "win32":
-            match_tmp_0__ = Str("erg-x86_64-pc-windows-msvc.zip")
+            match_tmp_4__ = Str("erg-x86_64-pc-windows-msvc.zip")
         case _:
-            match_tmp_0__ = Str("erg-x86_64-unknown-linux-gnu.tar.gz")
-    return match_tmp_0__
-os__ = __import__("os.path")
+            match_tmp_4__ = Str("erg-x86_64-unknown-linux-gnu.tar.gz")
+    return match_tmp_4__
 urllib__ = __import__("urllib.request")
-def if_tmp_func_3__():
+def if_tmp_func_7__():
     if ((sys__).platform == Str("win32")):
-        (print)(((Str("extracting ") + filename__) + Str(" ...")),)
+        (print)(((Str("extracting ") + (str__)(filename__,)) + Str(" ...")),)
+        global bytesio__
         bytesio__ = (io__).BytesIO((stream__).read(),)
+        global zipfile__
         zipfile__ = (zf__).ZipFile(bytesio__,)
-        (zipfile__).extractall((homedir__ + Str("/.erg/tmp")),)
+        (zipfile__).extractall(erg_tmp_dir__,)
         (zipfile__).close()
-        (su__).move((homedir__ + Str("/.erg/tmp/erg.exe")),(homedir__ + Str("/.erg/bin/erg.exe")),)
-        (su__).move((homedir__ + Str("/.erg/tmp/lib")),(homedir__ + Str("/.erg/lib")),)
-        if_tmp_2__ = (su__).rmtree((homedir__ + Str("/.erg/tmp")),)
+        (su__).move(((Str("") + (str__)(erg_tmp_dir__,)) + Str("/erg.exe")),((Str("") + (str__)(erg_bin_dir__,)) + Str("/erg.exe")),)
+        (su__).move(((Str("") + (str__)(erg_tmp_dir__,)) + Str("/lib")),((Str("") + (str__)(erg_dir__,)) + Str("/lib")),)
+        if_tmp_6__ = (su__).rmtree(erg_tmp_dir__,)
     else:
-        (print)(((Str("extracting ") + filename__) + Str(" ...")),)
+        (print)(((Str("extracting ") + (str__)(filename__,)) + Str(" ...")),)
+        global tarfile__
         tarfile__ = (tf__).open(fileobj=stream__,mode=Str("r|gz"),)
-        (tarfile__).extractall((homedir__ + Str("/.erg/tmp")),)
+        (tarfile__).extractall(erg_tmp_dir__,)
         (tarfile__).close()
-        (su__).move((homedir__ + Str("/.erg/tmp/erg")),(homedir__ + Str("/.erg/bin/erg")),)
-        (su__).move((homedir__ + Str("/.erg/tmp/lib")),(homedir__ + Str("/.erg/lib")),)
-        if_tmp_2__ = (su__).rmtree((homedir__ + Str("/.erg/tmp")),)
-    return if_tmp_2__
+        (su__).move(((Str("") + (str__)(erg_tmp_dir__,)) + Str("/erg")),((Str("") + (str__)(erg_bin_dir__,)) + Str("/erg")),)
+        (su__).move(((Str("") + (str__)(erg_tmp_dir__,)) + Str("/lib")),((Str("") + (str__)(erg_dir__,)) + Str("/lib")),)
+        if_tmp_6__ = (su__).rmtree(erg_tmp_dir__,)
+    return if_tmp_6__
 urllib__ = (__import__)(Str("urllib"),)
 tf__ = (__import__)(Str("tarfile"),)
 zf__ = (__import__)(Str("zipfile"),)
@@ -525,6 +706,15 @@ sys__ = (__import__)(Str("sys"),)
 os__ = (__import__)(Str("os"),)
 io__ = (__import__)(Str("io"),)
 su__ = (__import__)(Str("shutil"),)
+homedir__ = (
+(os__).path
+).expanduser(Str("~"),)
+erg_dir__ = (homedir__ + Str("/.erg"))
+erg_bin_dir__ = (homedir__ + Str("/.erg/bin"))
+erg_tmp_dir__ = (homedir__ + Str("/.erg/tmp"))
+if_tmp_func_1__()
+(os__).mkdir(erg_dir__,)
+(os__).mkdir(erg_bin_dir__,)
 latest_url__ = Str("https://api.github.com/repos/erg-lang/erg/releases/latest")
 _stream__ = (
 (urllib__).request
@@ -533,17 +723,12 @@ s__ = ((_stream__).read()).decode()
 jdata__ = (json__).loads(s__,)
 assert in_operator(jdata__,{(Str): (Str),})
 latest_version__ = (jdata__).__getitem__(Str("tag_name"),)
-(print)((Str("version: ") + latest_version__),)
-filename__ = match_tmp_func_1__()
-url__ = (((Str("https://github.com/erg-lang/erg/releases/download/") + latest_version__) + Str("/")) + filename__)
-(print)(((Str("downloading ") + url__) + Str(" ...")),)
-homedir__ = (
-    (os__).path
-    ).expanduser(Str("~"),)
-(os__).mkdir((homedir__ + Str("/.erg")),)
-(os__).mkdir((homedir__ + Str("/.erg/bin")),)
+(print)(((Str("version: ") + (str__)(latest_version__,)) + Str("")),)
+filename__ = match_tmp_func_5__()
+url__ = ((((Str("https://github.com/erg-lang/erg/releases/download/") + (str__)(latest_version__,)) + Str("/")) + (str__)(filename__,)) + Str(""))
+(print)(((Str("downloading ") + (str__)(url__,)) + Str(" ...")),)
 stream__ = (
-    (urllib__).request
-    ).urlopen(url__,)
-if_tmp_func_3__()
-(print)(((((Str("please add `.erg` to your PATH by running `export PATH=$PATH:") + homedir__) + Str("/.erg/bin` and `export ERG_PATH=")) + homedir__) + Str("/.erg`")),)
+(urllib__).request
+).urlopen(url__,)
+if_tmp_func_7__()
+(print)(((((Str("please add `.erg` to your PATH by running `export PATH=$PATH:") + (str__)(erg_bin_dir__,)) + Str("` and `export ERG_PATH=")) + (str__)(erg_dir__,)) + Str("`")),)
