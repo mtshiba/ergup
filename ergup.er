@@ -47,8 +47,8 @@ stream = urllib.request.urlopen!(url)
 if! sys.platform == "win32":
     do!:
         print! "extracting \{filename} ..."
-        bytesio = io.newBytesIO stream.read!()
-        zipfile = zf.open! bytesio
+        bytesio = io.BytesIO! stream.read!()
+        zipfile = zf.ZipFile! bytesio
         zipfile.extractall! erg_tmp_dir
         zipfile.close!()
         su.move! "\{erg_tmp_dir}/erg.exe", "\{erg_bin_dir}/erg.exe"
