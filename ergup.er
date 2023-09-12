@@ -30,7 +30,7 @@ latest_url = "https://api.github.com/repos/erg-lang/erg/releases/latest"
 _stream = urllib.request.urlopen!(latest_url)
 s = _stream.read!().decode()
 jdata = json.loads s
-assert jdata in {Str: Str}
+assert jdata in {Str: Obj}
 latest_version = jdata["tag_name"]
 
 print! "version: \{latest_version}"
