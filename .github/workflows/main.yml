@@ -25,18 +25,18 @@ jobs:
       - name: Execute the script (Ubuntu/MacOS)
         if: runner.os != 'Windows'
         run: |
-          python bin/ergup310.pyc && rm -rf /home/runner/.erg && echo y | python ergup.py
+          python bin/ergup310.pyc && rm -rf ~/.erg && python ergup.py
 
-          echo "PATH=$PATH:/home/runner/.erg/bin" >> $GITHUB_ENV
-          echo "ERG_PATH=/home/runner/.erg" >> $GITHUB_ENV
+          export PATH=$PATH:~/.erg/bin
+          export ERG_PATH=~/.erg
 
           echo 'print! "hello, world!"' | erg
       - name: Execute the script (Windows)
         if: runner.os == 'Windows'
         run: |
-          python bin/ergup310.pyc && Remove-Item -Force -Recurse C:\Users\runneradmin\.erg && echo y | python ergup.py
+          python bin/ergup310.pyc && Remove-Item -Force -Recurse C:\Users\runneradmin\.erg && python ergup.py
 
-          echo "PATH=$PATH;C:\Users\runneradmin\.erg\bin" >> $GITHUB_ENV
-          echo "ERG_PATH=C:\Users\runneradmin\.erg" >> $GITHUB_ENV
+          $env:PATH+=";C:\Users\runneradmin\.erg\bin"
+          $env:ERG_PATH="C:\Users\runneradmin\.erg"
 
           echo 'print! "hello, world!"' | erg
