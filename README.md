@@ -17,3 +17,9 @@ Python 3
 curl -L https://github.com/mtshiba/ergup/raw/main/ergup.py | python3
 # and please set environment variables
 ```
+
+### Installing nightly version
+
+```sh
+curl -L https://github.com/mtshiba/ergup/raw/main/ergup.py | python3 nightly
+```
