@@ -1178,7 +1178,7 @@ def if_tmp_func_1__():
 urllib_L1 = __import__("urllib.request")
 urllib_L1 = __import__("urllib.request")
 def if_tmp_func_5__():
-    if (((sys_L5).argv).__getitem__(Nat(1),) == Str("nightly")):
+    if (((sys_L5).argv).get(Nat(1),) == Str("nightly")):
         global latest_url_L32_C8
         latest_url_L32_C8 = Str("https://api.github.com/repos/erg-lang/erg/releases")
         global _stream_L33_C8
