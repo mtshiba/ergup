@@ -1208,7 +1208,7 @@ res_L74 = (sub_L9).run(Array([Str("git"),Str("clone"),poise_git_url_L69,]),captu
 (quit)(Str("Failed to clone poise repo"),) if ((res_L74).returncode != Nat(0)) else None
 (os_L6).chdir(Str("poise"),)
 (print)(Str("Building poise ..."),)
-res2_L79 = (sub_L9).run(Array([Str("erg"),Str("src/main.er"),Str("--"),Str("install"),]),capture_output=Bool(True),)
+res2_L79 = (sub_L9).run(Array([((Str("") + (str__)(erg_bin_dir_L13,)) + Str("/erg")),Str("src/main.er"),Str("--"),Str("install"),]),capture_output=Bool(True),)
 if_tmp_func_9__()
 (print)(Str("poise installed successfully"),)
 (os_L6).chdir(Str(".."),)
