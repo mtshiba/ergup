@@ -6,6 +6,7 @@ sys = pyimport "sys"
 os = pyimport "os"
 io = pyimport "io"
 su = pyimport "shutil"
+sub = pyimport "subprocess"
 
 homedir = os.path.expanduser! "~"
 erg_dir = homedir + "/.erg"
@@ -17,10 +18,10 @@ if! os.path.exists!(erg_dir), do!:
     answer = input!()
     if! answer == "y":
         do!:
-            print! "removing \{erg_dir} ..."
+            print! "Removing \{erg_dir} ..."
             su.rmtree! erg_dir
         do!:
-            print! "aborting installation"
+            print! "Aborting installation"
             exit 1
 
 os.mkdir! erg_dir
@@ -41,26 +42,46 @@ filename = match sys.platform:
     _ -> "erg-x86_64-unknown-linux-gnu.tar.gz"
 url = "https://github.com/erg-lang/erg/releases/download/\{latest_version}/\{filename}"
 
-print! "downloading \{url} ..."
+print! "Downloading \{url} ..."
 
 stream = urllib.request.urlopen!(url)
 if! sys.platform == "win32":
     do!:
-        print! "extracting \{filename} ..."
+        print! "Extracting \{filename} ..."
         bytesio = io.BytesIO! stream.read!()
         zipfile = zf.ZipFile! bytesio
         zipfile.extractall! erg_tmp_dir
         zipfile.close!()
-        su.move! "\{erg_tmp_dir}/erg.exe", "\{erg_bin_dir}/erg.exe"
-        su.move! "\{erg_tmp_dir}/lib", "\{erg_dir}/lib"
+        discard su.move! "\{erg_tmp_dir}/erg.exe", "\{erg_bin_dir}/erg.exe"
+        discard su.move! "\{erg_tmp_dir}/lib", "\{erg_dir}/lib"
         su.rmtree! erg_tmp_dir
     do!:
-        print! "extracting \{filename} ..."
+        print! "Extracting \{filename} ..."
         tarfile = tf.open!(fileobj:=stream, mode:="r|gz")
         tarfile.extractall! erg_tmp_dir
         tarfile.close!()
-        su.move! "\{erg_tmp_dir}/erg", "\{erg_bin_dir}/erg"
-        su.move! "\{erg_tmp_dir}/lib", "\{erg_dir}/lib"
+        discard su.move! "\{erg_tmp_dir}/erg", "\{erg_bin_dir}/erg"
+        discard su.move! "\{erg_tmp_dir}/lib", "\{erg_dir}/lib"
         su.rmtree! erg_tmp_dir
 
-print! "please add `.erg` to your PATH by running `export PATH=$PATH:\{erg_bin_dir}` and `export ERG_PATH=\{erg_dir}`"
+print! "erg installed successfully"
+
+poise_git_url = "https://github.com/erg-lang/poise.git"
+print! "Cloning poise (erg package manager) ..."
+if! not(os.path.exists!(erg_tmp_dir)), do!:
+    os.mkdir! erg_tmp_dir
+os.chdir! erg_tmp_dir
+res = sub.run! ["git", "clone", poise_git_url], capture_output:=True
+if! res.returncode != 0, do!:
+    panic "Failed to clone poise repo"
+os.chdir! "poise"
+print! "Building poise ..."
+res2 = sub.run! ["erg", "src/main.er", "--", "install"], capture_output:=True
+if! res2.returncode != 0, do!:
+    assert res2.stderr in Bytes
+    panic "Failed to install poise: \{res2.stderr.decode()}"
+print! "poise installed successfully"
+os.chdir! ".."
+su.rmtree! "poise"
+
+print! "Please add `.erg` to your PATH by running `export PATH=$PATH:\{erg_bin_dir}` and `export ERG_PATH=\{erg_dir}`"
