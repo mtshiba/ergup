@@ -25,18 +25,16 @@ jobs:
       - name: Execute the script (Ubuntu/MacOS)
         if: runner.os != 'Windows'
         run: |
-          python bin/ergup310.pyc && rm -rf ~/.erg && python ergup.py nightly
-
           export PATH=$PATH:~/.erg/bin
           export ERG_PATH=~/.erg
 
+          python bin/ergup310.pyc && rm -rf ~/.erg && python ergup.py nightly
           echo 'print! "hello, world!"' | erg
       - name: Execute the script (Windows)
         if: runner.os == 'Windows'
         run: |
-          python bin/ergup310.pyc && Remove-Item -Force -Recurse C:\Users\runneradmin\.erg && python ergup.py nightly
-
           $env:PATH+=";C:\Users\runneradmin\.erg\bin"
           $env:ERG_PATH="C:\Users\runneradmin\.erg"
 
+          python bin/ergup310.pyc && Remove-Item -Force -Recurse C:\Users\runneradmin\.erg && python ergup.py nightly
           echo 'print! "hello, world!"' | erg
