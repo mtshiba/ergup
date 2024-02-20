@@ -21,5 +21,5 @@ curl -L https://github.com/mtshiba/ergup/raw/main/ergup.py | python3
 ### Installing nightly version
 
 ```sh
-curl -L https://github.com/mtshiba/ergup/raw/main/ergup.py | python3 nightly
+curl -L https://github.com/mtshiba/ergup/raw/main/ergup.py | python3 - nightly
 ```
