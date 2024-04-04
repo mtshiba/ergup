@@ -16,19 +16,19 @@ def while__(cond_block, body):
 
 
 def with__(obj, body):
-    obj.__enter__()
-    body(obj)
-    obj.__exit__()
-
+    with obj as o:
+        body(o)
 
 def discard__(obj):
     pass
 
+
 def assert__(test, msg=None):
     assert test, msg
 
+
 def then__(x, f):
-    if x == None or x == NotImplemented:
+    if x is None or x is NotImplemented:
         return x
     else:
         return f(x)
@@ -150,13 +150,13 @@ class RangeIterator:
         self.rng = rng
         self.needle = self.rng.start
         if issubclass(Nat, type(self.rng.start)):
-            if not (self.needle in self.rng):
+            if self.needle not in self.rng:
                 self.needle += 1
         elif issubclass(Str, type(self.rng.start)):
-            if not (self.needle in self.rng):
+            if self.needle not in self.rng:
                 self.needle = chr(ord(self.needle) + 1)
         else:
-            if not (self.needle in self.rng):
+            if self.needle not in self.rng:
                 self.needle = self.needle.succ()
 
     def __iter__(self):
@@ -186,39 +186,46 @@ try:
     from typing import Union
 except ImportError:
     import warnings
+
     warnings.warn("`typing.Union` is not available. Please use Python 3.8+.")
+
     class Union:
         pass
 
+
 class UnionType:
-        __origin__ = Union
-        __args__: list # list[type]
-        def __init__(self, *args):
-            self.__args__ = args
-        def __str__(self):
-            s = "UnionType["
-            for i, arg in enumerate(self.__args__):
-                if i > 0:
-                    s += ", "
-                s += str(arg)
-            s += "]"
-            return s
-        def __repr__(self):
-            return self.__str__()
+    __origin__ = Union
+    __args__: list  # list[type]
+
+    def __init__(self, *args):
+        self.__args__ = args
+
+    def __str__(self):
+        s = "UnionType[" + ", ".join(str(arg) for arg in self.__args__) + "]"
+        return s
+
+    def __repr__(self):
+        return self.__str__()
+
 
 class FakeGenericAlias:
-        __origin__: type
-        __args__: list # list[type]
-        def __init__(self, origin, *args):
-            self.__origin__ = origin
-            self.__args__ = args
+    __origin__: type
+    __args__: list  # list[type]
+
+    def __init__(self, origin, *args):
+        self.__origin__ = origin
+        self.__args__ = args
+
+
 try:
     from types import GenericAlias
 except ImportError:
     GenericAlias = FakeGenericAlias
 
+
 def is_type(x) -> bool:
     return isinstance(x, (type, FakeGenericAlias, GenericAlias, UnionType))
+
 
 # The behavior of `builtins.isinstance` depends on the Python version.
 def _isinstance(obj, classinfo) -> bool:
@@ -233,15 +240,16 @@ def _isinstance(obj, classinfo) -> bool:
         except:
             return False
 
+
 class MutType:
     value: object
-
-
-
-
-
-
 from collections import namedtuple
+
+
+
+
+
+
 
 # (elem in y) == contains_operator(y, elem)
 def contains_operator(y, elem) -> bool:
@@ -293,17 +301,19 @@ def contains_operator(y, elem) -> bool:
             value = next(iter(y.values()))
             value_check = all([contains_operator(value, el) for el in elem.values()])
             return key_check and value_check
-        type_check = True # TODO:
+        type_check = True  # TODO:
         len_check = True  # It can be True even if either elem or y has the larger number of elems
         return type_check and len_check
     elif _isinstance(elem, list):
         
-        return contains_operator(y, Array(elem))
+
+        return contains_operator(y, List(elem))
     elif callable(elem):
         # TODO:
         return callable(y)
     else:
         return elem in y
+
 
 
 
@@ -469,8 +479,12 @@ class IntMut(MutType):  # inherits Int
     def pred(self):
         return self.value.pred()
 
+    def copy(self):
+        return IntMut(self.value)
 
   # don't unify with the above line
+
+
 
 
 
@@ -616,13 +630,17 @@ class NatMut(IntMut):  # and Nat
         for _ in range(self.value):
             f()
 
+    def copy(self):
+        return NatMut(self.value)
+
+
 
 
 
 
 class Bool(Nat):
     def try_new(b: bool):  # -> Result[Nat]
-        if b == True or b == False:
+        if isinstance(b, bool):
             return Bool(b)
         else:
             return Error("Bool can't be other than True or False")
@@ -676,6 +694,10 @@ class BoolMut(NatMut):
     def invert(self):
         self.value = self.value.invert()
 
+    def copy(self):
+        return BoolMut(self.value)
+
+
 
 
 
@@ -716,6 +738,7 @@ class Str(str):
 
     def __getitem__(self, index_or_slice):
         
+
         if isinstance(index_or_slice, slice):
             return Str(str.__getitem__(self, index_or_slice))
         elif isinstance(index_or_slice, Range):
@@ -784,6 +807,10 @@ class StrMut(MutType):  # Inherits Str
     def insert(self, idx: int, s: str):
         self.value = self.value[:idx] + s + self.value[idx:]
 
+    def copy(self):
+        return StrMut(self.value)
+
+
 
 
 
@@ -834,6 +861,7 @@ class Float(float):
 
     def nearly_eq(self, other, epsilon=EPSILON):
         return abs(self - other) < epsilon
+
 
 class FloatMut(MutType):  # inherits Float
     value: Float
@@ -942,6 +970,8 @@ class FloatMut(MutType):  # inherits Float
     def dec(self, value=1.0):
         self.value = Float(self.value - value)
 
+    def copy(self):
+        return FloatMut(self.value)
 
 
 
@@ -950,21 +980,23 @@ class FloatMut(MutType):  # inherits Float
 
 
 
-class Array(list):
+
+
+class List(list):
     @staticmethod
-    def try_new(arr):  # -> Result[Array]
-        if isinstance(arr, list):
-            return Array(arr)
+    def try_new(lis):  # -> Result[List]
+        if isinstance(lis, list):
+            return List(lis)
         else:
             return Error("not a list")
 
-    def generic_try_new(arr, cls = None):  # -> Result[Array]
+    def generic_try_new(lis, cls=None):  # -> Result[List]
         if cls is None:
-            return Array.try_new(arr)
+            return List.try_new(lis)
         else:
             elem_t = cls.__args__[0]
             elems = []
-            for elem in arr:
+            for elem in lis:
                 if not hasattr(elem_t, "try_new"):
                     return Error("not a " + str(elem_t))
                 # TODO: nested check
@@ -973,11 +1005,11 @@ class Array(list):
                     elems.append(elem)
                 else:
                     return Error("not a " + str(elem_t))
-            return Array(elems)
+            return List(elems)
 
     def dedup(self, same_bucket=None):
         if same_bucket is None:
-            return Array(list(set(self)))
+            return List(list(set(self)))
         else:
             removes = []
             for lhs, rhs in zip(self, self[1:]):
@@ -998,20 +1030,20 @@ class Array(list):
         return self
 
     def partition(self, f):
-        return Array(list(filter(f, self))), Array(
+        return List(list(filter(f, self))), List(
             list(filter(lambda x: not f(x), self))
         )
 
     def __mul__(self, n):
-        return then__(list.__mul__(self, n), Array)
+        return then__(list.__mul__(self, n), List)
 
     def __getitem__(self, index_or_slice):
         if isinstance(index_or_slice, slice):
-            return Array(list.__getitem__(self, index_or_slice))
+            return List(list.__getitem__(self, index_or_slice))
         elif isinstance(index_or_slice, NatMut) or isinstance(index_or_slice, IntMut):
             return list.__getitem__(self, int(index_or_slice))
         elif isinstance(index_or_slice, Range):
-            return Array(list.__getitem__(self, index_or_slice.into_slice()))
+            return List(list.__getitem__(self, index_or_slice.into_slice()))
         else:
             return list.__getitem__(self, index_or_slice)
 
@@ -1019,13 +1051,13 @@ class Array(list):
         return hash(tuple(self))
 
     def update(self, f):
-        self = Array(f(self))
+        self = List(f(self))
 
     def type_check(self, t: type) -> bool:
         if isinstance(t, list):
             if len(t) < len(self):
                 return False
-            for (inner_t, elem) in zip(t, self):
+            for inner_t, elem in zip(t, self):
                 if not contains_operator(inner_t, elem):
                     return False
             return True
@@ -1052,10 +1084,11 @@ class Array(list):
 
     def prod(self, start=1):
         from functools import reduce
+
         return reduce(lambda x, y: x * y, self, start)
 
     def reversed(self):
-        return Array(list.__reversed__(self))
+        return List(list.__reversed__(self))
 
     def insert_at(self, index, value):
         self.insert(index, value)
@@ -1072,15 +1105,20 @@ class Array(list):
 
     def repeat(self, n):
         from copy import deepcopy
+
         new = []
         for _ in range(n):
             new.extend(deepcopy(self))
-        return Array(new)
+        return List(new)
 
-class UnsizedArray:
+
+class UnsizedList:
     elem: object
+
     def __init__(self, elem):
         self.elem = elem
+
+
 class Dict(dict):
     @staticmethod
     def try_new(dic):  # -> Result[Dict]
@@ -1088,13 +1126,16 @@ class Dict(dict):
             return Dict(dic)
         else:
             return Error("not a dict")
+
     def concat(self, other):
         return Dict({**self, **other})
+
     def diff(self, other):
         return Dict({k: v for k, v in self.items() if k not in other})
+
     # other: Iterable
     def update(self, other, conflict_resolver=None):
-        if conflict_resolver == None:
+        if conflict_resolver is None:
             super().update(other)
         elif isinstance(other, dict):
             self.merge(other, conflict_resolver)
@@ -1104,21 +1145,27 @@ class Dict(dict):
                     self[k] = conflict_resolver(self[k], v)
                 else:
                     self[k] = v
+
     # other: Dict
     def merge(self, other, conflict_resolver=None):
         self.update(other, conflict_resolver)
+
     def insert(self, key, value):
         self[key] = value
+
     def remove(self, key):
         res = self.get(key)
-        if res != None:
+        if res is not None:
             del self[key]
         return res
+
     def as_record(self):
         from collections import namedtuple
-        return namedtuple('Record', self.keys())(**self)
+
+        return namedtuple("Record", self.keys())(**self)
 class Set(set):
     pass
+
 
 
 
@@ -1180,7 +1227,7 @@ def if_tmp_func_1__():
 urllib_L1 = __import__("urllib.request")
 urllib_L1 = __import__("urllib.request")
 def if_tmp_func_5__():
-    if ((Array((sys_L5).argv)).get(Nat(1),) == Str("nightly")):
+    if ((List((sys_L5).argv)).get(Nat(1),) == Str("nightly")):
         global latest_url_L32_C8
         latest_url_L32_C8 = Str("https://api.github.com/repos/erg-lang/erg/releases")
         global _stream_L33_C8
@@ -1191,8 +1238,8 @@ def if_tmp_func_5__():
         s_L34_C8 = ((_stream_L33_C8).read()).decode()
         global jdata_L35_C8
         jdata_L35_C8 = (json_L4).loads(Str(s_L34_C8),)
-        assert contains_operator((Array)[Dict({(Str): (object),}),],jdata_L35_C8)
-        if_tmp_4__ = ((Array(jdata_L35_C8)).__getitem__(Nat(0),)).__getitem__(Str("tag_name"),)
+        assert contains_operator((List)[Dict({(Str): (object),}),],jdata_L35_C8)
+        if_tmp_4__ = ((List(jdata_L35_C8)).__getitem__(Nat(0),)).__getitem__(Str("tag_name"),)
     else:
         global latest_url_L39_C8
         latest_url_L39_C8 = Str("https://api.github.com/repos/erg-lang/erg/releases/latest")
@@ -1281,11 +1328,11 @@ poise_git_url_L78 = Str("https://github.com/erg-lang/poise.git")
 (os_L6).path
 ).exists(Str(erg_tmp_dir_L14),))) else None
 (os_L6).chdir(Str(erg_tmp_dir_L14),)
-res_L83 = (sub_L9).run(Array([Str("git"),Str("clone"),Str(poise_git_url_L78),]),capture_output=Bool(True),)
+res_L83 = (sub_L9).run(List([Str("git"),Str("clone"),Str(poise_git_url_L78),]),capture_output=Bool(True),)
 (quit)(Str("Failed to clone poise repo"),) if (Int((res_L83).returncode) != Nat(0)) else None
 (os_L6).chdir(Str("poise"),)
 (print)(Str("Building poise ..."),)
-res2_L88 = (sub_L9).run(Array([((Str("") + (str__)(Str(erg_bin_dir_L13),)) + Str("/erg")),Str("src/main.er"),Str("--"),Str("install"),]),capture_output=Bool(True),)
+res2_L88 = (sub_L9).run(List([((Str("") + (str__)(Str(erg_bin_dir_L13),)) + Str("/erg")),Str("src/main.er"),Str("--"),Str("install"),]),capture_output=Bool(True),)
 if_tmp_func_11__()
 (print)(Str("poise installed successfully"),)
 (os_L6).chdir(Str(".."),)

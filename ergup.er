@@ -33,7 +33,7 @@ latest_version = if! sys.argv.get(1) == "nightly":
         _stream = urllib.request.urlopen!(latest_url)
         s = _stream.read!().decode()
         jdata = json.loads s
-        assert jdata in Array({Str: Obj})
+        assert jdata in List({Str: Obj})
         jdata[0]["tag_name"]
     do!:
         latest_url = "https://api.github.com/repos/erg-lang/erg/releases/latest"
