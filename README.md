@@ -1,5 +1,7 @@
 # ergup
 
+Install the pre-built binaries of erg. Also, build and install the package manager (poise) using the installed/existing compiler.
+
 ## requirement
 
 Python 3
