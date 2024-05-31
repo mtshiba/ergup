@@ -32,10 +32,12 @@ install_poise!() =
     os.chdir! ".."
     su.rmtree! "poise"
 
+overwrite = !False
 if! os.path.exists!(erg_dir), do!:
     print! ".erg directory already exists, do you want to overwrite it? [y/n]", end:=" "
     answer = input!()
-    if! answer == "y":
+    overwrite.update! _ -> answer == "y"
+    if! overwrite:
         do!:
             print! "Removing \{erg_dir} ..."
             su.rmtree! erg_dir
@@ -102,4 +104,5 @@ print! "erg installed successfully"
 
 install_poise!()
 
-print! "Please add `.erg` to your PATH by running `export PATH=$PATH:\{erg_bin_dir}` and `export ERG_PATH=\{erg_dir}`"
+if! not(overwrite), do!:
+    print! "Please add `.erg` to your PATH by running `export PATH=$PATH:\{erg_bin_dir}` and `export ERG_PATH=\{erg_dir}`"

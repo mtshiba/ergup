@@ -243,6 +243,10 @@ def _isinstance(obj, classinfo) -> bool:
 
 class MutType:
     value: object
+
+    # This method is a fallback to implement pseudo-inheritance.
+    def __getattr__(self, name):
+        return object.__getattribute__(self.value, name)
 from collections import namedtuple
 
 
@@ -746,6 +750,8 @@ class Str(str):
         else:
             return str.__getitem__(self, index_or_slice)
 
+    def from_(self, nth: int):
+        return self[nth:]
 
 class StrMut(MutType):  # Inherits Str
     value: Str
@@ -1111,6 +1117,8 @@ class List(list):
             new.extend(deepcopy(self))
         return List(new)
 
+    def from_(self, nth: int):
+        return self[nth:]
 
 class UnsizedList:
     elem: object
@@ -1212,105 +1220,111 @@ def if_tmp_func_1__():
     else:
         if_tmp_0__ = None
     return if_tmp_0__
-os_L6 = __import__("os.path")
-def if_tmp_func_9__():
-    if (Str(answer_L45_C16) == Str("y")):
-        (install_poise__erg_proc___L16)()
-        if_tmp_8__ = (exit)(Nat(0),)
+def mutate_operator(x):
+    if hasattr(x, "mutate"):
+        return x.mutate()
     else:
-        if_tmp_8__ = None
-    return if_tmp_8__
-def if_tmp_func_7__():
+        return x
+os_L6 = __import__("os.path")
+def if_tmp_func_10__():
+    if (Str(answer_L47_C16) == Str("y")):
+        (install_poise__erg_proc___L16)()
+        if_tmp_9__ = (exit)(Nat(0),)
+    else:
+        if_tmp_9__ = None
+    return if_tmp_9__
+def if_tmp_func_8__():
     if (Int(((sub_L9).run(Str("poise"),capture_output=Bool(True),shell=Bool(True),)).returncode) != Nat(0)):
         (print)(Str("poise is not installed, do you want to install it? [y/n]"),end=Str(" "),)
-        global answer_L45_C16
-        answer_L45_C16 = (input)()
-        if_tmp_6__ = if_tmp_func_9__()
+        global answer_L47_C16
+        answer_L47_C16 = (input)()
+        if_tmp_7__ = if_tmp_func_10__()
     else:
-        if_tmp_6__ = None
-    return if_tmp_6__
-def if_tmp_func_5__():
-    if (Str(answer_L37_C4) == Str("y")):
+        if_tmp_7__ = None
+    return if_tmp_7__
+def if_tmp_func_6__():
+    if overwrite_L35:
         (print)(((Str("Removing ") + (str__)(Str(erg_dir_L12),)) + Str(" ...")),)
-        if_tmp_4__ = (su_L8).rmtree(Str(erg_dir_L12),)
+        if_tmp_5__ = (su_L8).rmtree(Str(erg_dir_L12),)
     else:
-        if_tmp_func_7__()
+        if_tmp_func_8__()
         (print)(Str("Aborting installation"),)
-        if_tmp_4__ = (exit)(Nat(1),)
-    return if_tmp_4__
+        if_tmp_5__ = (exit)(Nat(1),)
+    return if_tmp_5__
 def if_tmp_func_3__():
     if (
 (os_L6).path
 ).exists(Str(erg_dir_L12),):
         (print)(Str(".erg directory already exists, do you want to overwrite it? [y/n]"),end=Str(" "),)
-        global answer_L37_C4
-        answer_L37_C4 = (input)()
-        if_tmp_2__ = if_tmp_func_5__()
+        global answer_L38_C4
+        answer_L38_C4 = (input)()
+        (overwrite_L35).update((lambda _4,:            (Str(answer_L38_C4) == Str("y"))),)
+        if_tmp_2__ = if_tmp_func_6__()
     else:
         if_tmp_2__ = None
     return if_tmp_2__
 urllib_L1 = __import__("urllib.request")
 urllib_L1 = __import__("urllib.request")
-def if_tmp_func_11__():
+def if_tmp_func_12__():
     if ((List((sys_L5).argv)).get(Nat(1),) == Str("nightly")):
-        global latest_url_L57_C8
-        latest_url_L57_C8 = Str("https://api.github.com/repos/erg-lang/erg/releases")
-        global _stream_L58_C8
-        _stream_L58_C8 = (
+        global latest_url_L59_C8
+        latest_url_L59_C8 = Str("https://api.github.com/repos/erg-lang/erg/releases")
+        global _stream_L60_C8
+        _stream_L60_C8 = (
         (urllib_L1).request
-        ).urlopen(Str(latest_url_L57_C8),)
-        global s_L59_C8
-        s_L59_C8 = ((_stream_L58_C8).read()).decode()
-        global jdata_L60_C8
-        jdata_L60_C8 = (json_L4).loads(Str(s_L59_C8),)
-        assert contains_operator((List)[Dict({(Str): (object),}),],jdata_L60_C8)
-        if_tmp_10__ = ((List(jdata_L60_C8)).__getitem__(Nat(0),)).__getitem__(Str("tag_name"),)
+        ).urlopen(Str(latest_url_L59_C8),)
+        global s_L61_C8
+        s_L61_C8 = ((_stream_L60_C8).read()).decode()
+        global jdata_L62_C8
+        jdata_L62_C8 = (json_L4).loads(Str(s_L61_C8),)
+        assert contains_operator((List)[Dict({(Str): (object),}),],jdata_L62_C8)
+        if_tmp_11__ = ((List(jdata_L62_C8)).__getitem__(Nat(0),)).__getitem__(Str("tag_name"),)
     else:
-        global latest_url_L64_C8
-        latest_url_L64_C8 = Str("https://api.github.com/repos/erg-lang/erg/releases/latest")
-        global _stream_L65_C8
-        _stream_L65_C8 = (
+        global latest_url_L66_C8
+        latest_url_L66_C8 = Str("https://api.github.com/repos/erg-lang/erg/releases/latest")
+        global _stream_L67_C8
+        _stream_L67_C8 = (
         (urllib_L1).request
-        ).urlopen(Str(latest_url_L64_C8),)
-        global s_L66_C8
-        s_L66_C8 = ((_stream_L65_C8).read()).decode()
-        global jdata_L67_C8
-        jdata_L67_C8 = (json_L4).loads(Str(s_L66_C8),)
-        assert contains_operator(Dict({(Str): (object),}),jdata_L67_C8)
-        if_tmp_10__ = (Dict(jdata_L67_C8)).__getitem__(Str("tag_name"),)
-    return if_tmp_10__
-def match_tmp_func_13__():
+        ).urlopen(Str(latest_url_L66_C8),)
+        global s_L68_C8
+        s_L68_C8 = ((_stream_L67_C8).read()).decode()
+        global jdata_L69_C8
+        jdata_L69_C8 = (json_L4).loads(Str(s_L68_C8),)
+        assert contains_operator(Dict({(Str): (object),}),jdata_L69_C8)
+        if_tmp_11__ = (Dict(jdata_L69_C8)).__getitem__(Str("tag_name"),)
+    return if_tmp_11__
+def match_tmp_func_14__():
     match Str((sys_L5).platform):
-        case ("darwin") as __percent__p_desugar_1_L74_C4:
-            match_tmp_12__ = Str("erg-x86_64-apple-darwin.tar.gz")
-        case ("win32") as __percent__p_desugar_2_L75_C4:
-            match_tmp_12__ = Str("erg-x86_64-pc-windows-msvc.zip")
+        case ("darwin") as __percent__p_desugar_1_L76_C4:
+            match_tmp_13__ = Str("erg-x86_64-apple-darwin.tar.gz")
+        case ("win32") as __percent__p_desugar_2_L77_C4:
+            match_tmp_13__ = Str("erg-x86_64-pc-windows-msvc.zip")
         case _:
-            match_tmp_12__ = Str("erg-x86_64-unknown-linux-gnu.tar.gz")
-    return match_tmp_12__
+            match_tmp_13__ = Str("erg-x86_64-unknown-linux-gnu.tar.gz")
+    return match_tmp_13__
 urllib_L1 = __import__("urllib.request")
-def if_tmp_func_15__():
+def if_tmp_func_16__():
     if (Str((sys_L5).platform) == Str("win32")):
-        (print)(((Str("Extracting ") + (str__)(Str(filename_L73),)) + Str(" ...")),)
-        global bytesio_L85_C8
-        bytesio_L85_C8 = (io_L7).BytesIO((stream_L81).read(),)
-        global zipfile_L86_C8
-        zipfile_L86_C8 = (zf_L3).ZipFile(bytesio_L85_C8,)
-        (zipfile_L86_C8).extractall(Str(erg_tmp_dir_L14),)
-        (zipfile_L86_C8).close()
+        (print)(((Str("Extracting ") + (str__)(Str(filename_L75),)) + Str(" ...")),)
+        global bytesio_L87_C8
+        bytesio_L87_C8 = (io_L7).BytesIO((stream_L83).read(),)
+        global zipfile_L88_C8
+        zipfile_L88_C8 = (zf_L3).ZipFile(bytesio_L87_C8,)
+        (zipfile_L88_C8).extractall(Str(erg_tmp_dir_L14),)
+        (zipfile_L88_C8).close()
         (discard__)((su_L8).move(((Str("") + (str__)(Str(erg_tmp_dir_L14),)) + Str("/erg.exe")),((Str("") + (str__)(Str(erg_bin_dir_L13),)) + Str("/erg.exe")),),)
         (discard__)((su_L8).move(((Str("") + (str__)(Str(erg_tmp_dir_L14),)) + Str("/lib")),((Str("") + (str__)(Str(erg_dir_L12),)) + Str("/lib")),),)
-        if_tmp_14__ = (su_L8).rmtree(Str(erg_tmp_dir_L14),)
+        if_tmp_15__ = (su_L8).rmtree(Str(erg_tmp_dir_L14),)
     else:
-        (print)(((Str("Extracting ") + (str__)(Str(filename_L73),)) + Str(" ...")),)
-        global tarfile_L94_C8
-        tarfile_L94_C8 = (tf_L2).open(fileobj=stream_L81,mode=Str("r|gz"),)
-        (tarfile_L94_C8).extractall(Str(erg_tmp_dir_L14),)
-        (tarfile_L94_C8).close()
+        (print)(((Str("Extracting ") + (str__)(Str(filename_L75),)) + Str(" ...")),)
+        global tarfile_L96_C8
+        tarfile_L96_C8 = (tf_L2).open(fileobj=stream_L83,mode=Str("r|gz"),)
+        (tarfile_L96_C8).extractall(Str(erg_tmp_dir_L14),)
+        (tarfile_L96_C8).close()
         (discard__)((su_L8).move(((Str("") + (str__)(Str(erg_tmp_dir_L14),)) + Str("/erg")),((Str("") + (str__)(Str(erg_bin_dir_L13),)) + Str("/erg")),),)
         (discard__)((su_L8).move(((Str("") + (str__)(Str(erg_tmp_dir_L14),)) + Str("/lib")),((Str("") + (str__)(Str(erg_dir_L12),)) + Str("/lib")),),)
-        if_tmp_14__ = (su_L8).rmtree(Str(erg_tmp_dir_L14),)
-    return if_tmp_14__
+        if_tmp_15__ = (su_L8).rmtree(Str(erg_tmp_dir_L14),)
+    return if_tmp_15__
 urllib_L1 = (__import__)(Str("urllib"),)
 tf_L2 = (__import__)(Str("tarfile"),)
 zf_L3 = (__import__)(Str("zipfile"),)
@@ -1346,18 +1360,19 @@ def install_poise__erg_proc___L16():
     (os_L6).chdir(Str(".."),)
     return (su_L8).rmtree(Str("poise"),)
 
+overwrite_L35 = mutate_operator(Bool(False))
 if_tmp_func_3__()
 (os_L6).mkdir(Str(erg_dir_L12),)
 (os_L6).mkdir(Str(erg_bin_dir_L13),)
-latest_version_L55 = if_tmp_func_11__()
-(print)(((Str("version: ") + (str__)(latest_version_L55,)) + Str("")),)
-filename_L73 = match_tmp_func_13__()
-url_L77 = ((((Str("https://github.com/erg-lang/erg/releases/download/") + (str__)(latest_version_L55,)) + Str("/")) + (str__)(Str(filename_L73),)) + Str(""))
-(print)(((Str("Downloading ") + (str__)(Str(url_L77),)) + Str(" ...")),)
-stream_L81 = (
+latest_version_L57 = if_tmp_func_12__()
+(print)(((Str("version: ") + (str__)(latest_version_L57,)) + Str("")),)
+filename_L75 = match_tmp_func_14__()
+url_L79 = ((((Str("https://github.com/erg-lang/erg/releases/download/") + (str__)(latest_version_L57,)) + Str("/")) + (str__)(Str(filename_L75),)) + Str(""))
+(print)(((Str("Downloading ") + (str__)(Str(url_L79),)) + Str(" ...")),)
+stream_L83 = (
 (urllib_L1).request
-).urlopen(Str(url_L77),)
-if_tmp_func_15__()
+).urlopen(Str(url_L79),)
+if_tmp_func_16__()
 (print)(Str("erg installed successfully"),)
 (install_poise__erg_proc___L16)()
-(print)(((((Str("Please add `.erg` to your PATH by running `export PATH=$PATH:") + (str__)(Str(erg_bin_dir_L13),)) + Str("` and `export ERG_PATH=")) + (str__)(Str(erg_dir_L12),)) + Str("`")),)
+(print)(((((Str("Please add `.erg` to your PATH by running `export PATH=$PATH:") + (str__)(Str(erg_bin_dir_L13),)) + Str("` and `export ERG_PATH=")) + (str__)(Str(erg_dir_L12),)) + Str("`")),) if (not (overwrite_L35)) else None
