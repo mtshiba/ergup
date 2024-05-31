@@ -16,12 +16,12 @@ Python 3
 
 ```sh
 # If the Python command is registered as `python` in your environment, replace the `python3` part.
-curl -L https://github.com/mtshiba/ergup/raw/main/ergup.py | python3
+python3 <(curl -L https://github.com/mtshiba/ergup/raw/main/ergup.py)
 # and please set environment variables
 ```
 
 ### Installing nightly version
 
 ```sh
-curl -L https://github.com/mtshiba/ergup/raw/main/ergup.py | python3 - nightly
+python3 <(curl -L https://github.com/mtshiba/ergup/raw/main/ergup.py) - nightly
 ```
