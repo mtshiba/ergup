@@ -7,6 +7,7 @@ io = pyimport "io"
 su = pyimport "shutil"
 sub = pyimport "subprocess"
 {Path;} = pyimport "pathlib"
+{S_IWRITE;} = pyimport "stat"
 {request;} = pyimport "urllib"
 
 
@@ -22,6 +23,12 @@ ext = if! platform == "win32":
     do! "erg"
 
 erg_bin = erg_bin_dir.joinpath(ext).resolve!()
+
+
+remove_readonly!(func, path: Path, _: Obj) =
+
+    os.chmod! path, S_IWRITE
+    func(path)
 
 
 install_poise!() =
@@ -51,7 +58,7 @@ install_poise!() =
 
     print! "poise installed successfully"
     os.chdir! ".."
-    su.rmtree! "poise"
+    su.rmtree! poise, onerror:=remove_readonly!
 
 overwrite = !False
 if! os.path.exists!(erg_dir), do!:
@@ -61,7 +68,8 @@ if! erg_dir.exists!(), do!:
     if! overwrite:
         do!:
             print! "Removing \{erg_dir} ..."
-            su.rmtree! erg_dir
+            su.rmtree! erg_dir, onerror:=remove_readonly!
+
         do!:
             if! sub.run!("poise", capture_output := True, shell := True).returncode != 0, do!:
                 print! "poise is not installed, do you want to install it? [y/n]", end:=" "
@@ -120,6 +128,7 @@ erg_tmp_bin = erg_tmp_dir.joinpath(ext)
 discard su.move! erg_tmp_bin, erg_bin
 discard su.move! erg_tmp_dir.joinpath("lib"), erg_dir.joinpath("lib")
 
+su.rmtree! erg_tmp_dir, onerror:=remove_readonly!
 
 print! "erg installed successfully"
 
