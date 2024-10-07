@@ -1,4 +1,3 @@
-urllib = pyimport "urllib"
 tf = pyimport "tarfile"
 zf = pyimport "zipfile"
 json = pyimport "json"
@@ -7,64 +6,96 @@ os = pyimport "os"
 io = pyimport "io"
 su = pyimport "shutil"
 sub = pyimport "subprocess"
+{Path;} = pyimport "pathlib"
+{S_IWRITE;} = pyimport "stat"
+{request;} = pyimport "urllib"
 
-homedir = os.path.expanduser! "~"
-erg_dir = homedir + "/.erg"
-erg_bin_dir = homedir + "/.erg/bin"
-erg_tmp_dir = homedir + "/.erg/tmp"
+
+home_dir = Path.home!()
+erg_dir = home_dir.joinpath(".erg")
+erg_bin_dir = erg_dir.joinpath("bin")
+erg_tmp_dir = erg_dir.joinpath("tmp")
+
+platform = sys.platform
+
+ext = if! platform == "win32":
+    do! "erg.exe"
+    do! "erg"
+
+erg_bin = erg_bin_dir.joinpath(ext).resolve!()
+
+
+remove_readonly!(func, path: Path, _: Obj) =
+
+    os.chmod! path, S_IWRITE
+    func(path)
+
 
 install_poise!() =
-    poise_git_url = "https://github.com/erg-lang/poise.git"
-    print! "Cloning poise (erg package manager) ..."
-    if! not(os.path.exists!(erg_tmp_dir)), do!:
-        os.mkdir! erg_tmp_dir
-    os.chdir! erg_tmp_dir
-    res = sub.run! ["git", "clone", poise_git_url], capture_output:=True
-    if! res.returncode != 0, do!:
-        panic "Failed to clone poise repo"
-    os.chdir! "poise"
-    print! "Building poise ..."
-    res2 = sub.run! ["\{erg_bin_dir}/erg", "src/main.er", "--", "install"], capture_output:=True
-    if! res2.returncode != 0, do!:
-        assert res2.stderr in Bytes
-        panic "Failed to install poise: \{res2.stderr.decode()}"
-    print! "poise installed successfully"
-    os.chdir! ".."
-    su.rmtree! "poise"
 
-overwrite = !False
-if! os.path.exists!(erg_dir), do!:
-    print! ".erg directory already exists, do you want to overwrite it? [y/n]", end:=" "
-    answer = input!()
-    overwrite.update! _ -> answer == "y"
-    if! overwrite:
+    print! "Cloning poise (erg package manager) ..."
+    if! not(erg_tmp_dir.exists!()), do!:
+        erg_tmp_dir.mkdir!(parents:=True, exist_ok:=True)
+
+    os.chdir! erg_tmp_dir
+
+    poise = Path("poise")
+    if! not(poise.exists!()), do!:
+        cmd = ["git", "clone", "https://github.com/erg-lang/poise.git"]
+        clone_res = sub.run! cmd, capture_output:=True
+        if! clone_res.returncode != 0, do!:
+            panic "Failed to clone poise repo"
+
+    os.chdir! poise
+
+    print! "Building poise ..."
+    poise_main_path = Path("src", "main.er")
+    cmd = ["\{erg_bin}", "\{poise_main_path}", "--", "install"]
+    install_res = sub.run! cmd, capture_output:=True
+    if! install_res.returncode != 0, do!:
+        assert install_res.stderr in Bytes
+        panic "Failed to install poise: \{install_res.stderr.decode()}"
+
+    print! "poise installed successfully"
+
+    os.chdir! ".."
+    su.rmtree! poise, onerror:=remove_readonly!
+
+
+is_overwrite = !False
+if! erg_dir.exists!(), do!:
+    answer = input!(".erg directory already exists, do you want to overwrite it? [y/n] ")
+    is_overwrite.update! _ -> answer == "y"
+    if! is_overwrite:
         do!:
             print! "Removing \{erg_dir} ..."
-            su.rmtree! erg_dir
+            su.rmtree! erg_dir, onerror:=remove_readonly!
+
         do!:
             if! sub.run!("poise", capture_output := True, shell := True).returncode != 0, do!:
-                print! "poise is not installed, do you want to install it? [y/n]", end:=" "
-                answer = input!()
+                answer = input!("poise is not installed, do you want to install it? [y/n] ")
                 if! answer == "y", do!:
                     install_poise!()
                     exit 0
+
             print! "Aborting installation"
             exit 1
 
-os.mkdir! erg_dir
-os.mkdir! erg_bin_dir
+erg_dir.mkdir!(parents:=True, exist_ok:=True)
+erg_bin_dir.mkdir!(parents:=True, exist_ok:=True)
 
 latest_version = if! sys.argv.get(1) == "nightly":
     do!:
-        latest_url = "https://api.github.com/repos/erg-lang/erg/releases"
-        _stream = urllib.request.urlopen!(latest_url)
+        LATEST_URL = "https://api.github.com/repos/erg-lang/erg/releases"
+        _stream = request.urlopen!(LATEST_URL)
         s = _stream.read!().decode()
         jdata = json.loads s
         assert jdata in List({Str: Obj})
         jdata[0]["tag_name"]
+
     do!:
-        latest_url = "https://api.github.com/repos/erg-lang/erg/releases/latest"
-        _stream = urllib.request.urlopen!(latest_url)
+        LATEST_URL = "https://api.github.com/repos/erg-lang/erg/releases/latest"
+        _stream = request.urlopen!(LATEST_URL)
         s = _stream.read!().decode()
         jdata = json.loads s
         assert jdata in {Str: Obj}
@@ -72,37 +103,35 @@ latest_version = if! sys.argv.get(1) == "nightly":
 
 print! "version: \{latest_version}"
 
-filename = match sys.platform:
+filename = match platform:
     "darwin" -> "erg-x86_64-apple-darwin.tar.gz"
     "win32" -> "erg-x86_64-pc-windows-msvc.zip"
     _ -> "erg-x86_64-unknown-linux-gnu.tar.gz"
 url = "https://github.com/erg-lang/erg/releases/download/\{latest_version}/\{filename}"
 
 print! "Downloading \{url} ..."
-
-stream = urllib.request.urlopen!(url)
-if! sys.platform == "win32":
+stream = request.urlopen!(url)
+print! "Extracting \{filename} ..."
+if! platform == "win32":
     do!:
-        print! "Extracting \{filename} ..."
         bytesio = io.BytesIO! stream.read!()
         zipfile = zf.ZipFile! bytesio
         zipfile.extractall! erg_tmp_dir
         zipfile.close!()
-        discard su.move! "\{erg_tmp_dir}/erg.exe", "\{erg_bin_dir}/erg.exe"
-        discard su.move! "\{erg_tmp_dir}/lib", "\{erg_dir}/lib"
-        su.rmtree! erg_tmp_dir
     do!:
-        print! "Extracting \{filename} ..."
         tarfile = tf.open!(fileobj:=stream, mode:="r|gz")
         tarfile.extractall! erg_tmp_dir
         tarfile.close!()
-        discard su.move! "\{erg_tmp_dir}/erg", "\{erg_bin_dir}/erg"
-        discard su.move! "\{erg_tmp_dir}/lib", "\{erg_dir}/lib"
-        su.rmtree! erg_tmp_dir
+
+erg_tmp_bin = erg_tmp_dir.joinpath(ext)
+discard su.move! erg_tmp_bin, erg_bin
+discard su.move! erg_tmp_dir.joinpath("lib"), erg_dir.joinpath("lib")
+
+su.rmtree! erg_tmp_dir, onerror:=remove_readonly!
 
 print! "erg installed successfully"
 
 install_poise!()
 
-if! not(overwrite), do!:
+if! not(is_overwrite), do!:
     print! "Please add `.erg` to your PATH by running `export PATH=$PATH:\{erg_bin_dir}` and `export ERG_PATH=\{erg_dir}`"
