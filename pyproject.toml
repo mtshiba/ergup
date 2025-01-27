@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ergup"
+version = "0.1.0"
+description = "Erg toolchain installer"
+readme = "README.md"
+requires-python = ">=3.7"
+dependencies = []
+license = { text = "MIT" }
+authors = [
+    { name = "Shunsuke Shibayama", email = "sbym1346@gmail.com" }
+]
+classifiers = [
+    'Programming Language :: Python :: 3',
+    'License :: OSI Approved :: MIT License',
+    'Operating System :: OS Independent'
+]
+
+[project.scripts]
+ergup = "ergup.__init__:main"
