@@ -1,0 +1,42 @@
+name: Pip
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - '**.md'
+  pull_request:
+    branches: [ main ]
+    paths-ignore:
+      - '**.md'
+
+jobs:
+  pip-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Execute (Ubuntu/MacOS)
+        if: runner.os != 'Windows'
+        run: |
+          export PATH=$PATH:~/.erg/bin
+          export ERG_PATH=~/.erg
+
+          pip install ergup
+          ergup nightly
+          echo 'print! "hello, world!"' | erg
+      - name: Execute (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          $env:PATH+=";C:\Users\runneradmin\.erg\bin"
+          $env:ERG_PATH="C:\Users\runneradmin\.erg"
+
+          pip install ergup
+          ergup nightly
+          echo 'print! "hello, world!"' | erg

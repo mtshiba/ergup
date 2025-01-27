@@ -20,6 +20,13 @@ python3 <(curl -L https://github.com/mtshiba/ergup/raw/main/ergup/ergup.py)
 # and please set environment variables
 ```
 
+You can also install via pip.
+
+```sh
+pip install ergup
+ergup
+```
+
 ### Installing nightly version
 
 ```sh
