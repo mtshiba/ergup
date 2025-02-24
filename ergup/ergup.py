@@ -1144,9 +1144,9 @@ class Dict(dict):
         return Dict({k: v for k, v in self.items() if k not in other})
 
     # other: Iterable
-    def update(self, other, conflict_resolver=None):
+    def update(self, other={}, conflict_resolver=None, **kwargs):
         if conflict_resolver is None:
-            super().update(other)
+            super().update(other, **kwargs)
         elif isinstance(other, dict):
             self.merge(other, conflict_resolver)
         else:
@@ -1155,19 +1155,18 @@ class Dict(dict):
                     self[k] = conflict_resolver(self[k], v)
                 else:
                     self[k] = v
+            self.merge(kwargs, conflict_resolver)
 
     # other: Dict
     def merge(self, other, conflict_resolver=None):
-        self.update(other, conflict_resolver)
+        for k, v in other.items():
+            if k in self and conflict_resolver is not None:
+                self[k] = conflict_resolver(self[k], v)
+            else:
+                self[k] = v
 
     def insert(self, key, value):
         self[key] = value
-
-    def remove(self, key):
-        res = self.get(key)
-        if res is not None:
-            del self[key]
-        return res
 
     def as_record(self):
         from collections import namedtuple
@@ -1293,29 +1292,20 @@ def if_tmp_func_14__():
         assert contains_operator(Dict({(Str): (object),}),jdata_L100_C8)
         if_tmp_13__ = (Dict(jdata_L100_C8)).__getitem__(Str("tag_name"),)
     return if_tmp_13__
-def match_tmp_func_16__():
-    match Str(platform_L19):
-        case ("darwin") as __percent__p_desugar_4_L107_C4:
-            match_tmp_15__ = Str("erg-x86_64-apple-darwin.tar.gz")
-        case ("win32") as __percent__p_desugar_5_L108_C4:
-            match_tmp_15__ = Str("erg-x86_64-pc-windows-msvc.zip")
-        case _:
-            match_tmp_15__ = Str("erg-x86_64-unknown-linux-gnu.tar.gz")
-    return match_tmp_15__
-def if_tmp_func_18__():
+def if_tmp_func_16__():
     if (Str(platform_L19) == Str("win32")):
-        global bytesio_L117_C8
-        bytesio_L117_C8 = (io_L6).BytesIO((stream_L113).read(),)
-        global zipfile_L118_C8
-        zipfile_L118_C8 = (zf_L2).ZipFile(bytesio_L117_C8,)
-        (zipfile_L118_C8).extractall(erg_tmp_dir_L17,)
-        if_tmp_17__ = (zipfile_L118_C8).close()
+        global bytesio_L118_C8
+        bytesio_L118_C8 = (io_L6).BytesIO((stream_L114).read(),)
+        global zipfile_L119_C8
+        zipfile_L119_C8 = (zf_L2).ZipFile(bytesio_L118_C8,)
+        (zipfile_L119_C8).extractall(erg_tmp_dir_L17,)
+        if_tmp_15__ = (zipfile_L119_C8).close()
     else:
-        global tarfile_L122_C8
-        tarfile_L122_C8 = (tf_L1).open(fileobj=stream_L113,mode=Str("r|gz"),)
-        (tarfile_L122_C8).extractall(erg_tmp_dir_L17,)
-        if_tmp_17__ = (tarfile_L122_C8).close()
-    return if_tmp_17__
+        global tarfile_L123_C8
+        tarfile_L123_C8 = (tf_L1).open(fileobj=stream_L114,mode=Str("r|gz"),)
+        (tarfile_L123_C8).extractall(erg_tmp_dir_L17,)
+        if_tmp_15__ = (tarfile_L123_C8).close()
+    return if_tmp_15__
 tf_L1 = (__import__)(Str("tarfile"),)
 zf_L2 = (__import__)(Str("zipfile"),)
 json_L3 = (__import__)(Str("json"),)
@@ -1368,14 +1358,14 @@ if_tmp_func_5__()
 (erg_bin_dir_L16).mkdir(parents=Bool(True),exist_ok=Bool(True),)
 latest_version_L87 = if_tmp_func_14__()
 (print)(((Str("version: ") + (str__)(latest_version_L87,)) + Str("")),)
-filename_L106 = match_tmp_func_16__()
-url_L110 = ((((Str("https://github.com/erg-lang/erg/releases/download/") + (str__)(latest_version_L87,)) + Str("/")) + (str__)(Str(filename_L106),)) + Str(""))
-(print)(((Str("Downloading ") + (str__)(Str(url_L110),)) + Str(" ...")),)
-stream_L113 = (request_L11_C1).urlopen(Str(url_L110),)
+filename_L106 = Str("erg-x86_64-apple-darwin.tar.gz") if (Str(platform_L19) == Str("darwin")) else Str("erg-x86_64-pc-windows-msvc.zip") if (Str(platform_L19) == Str("win32")) else Str("erg-x86_64-unknown-linux-gnu.tar.gz")
+url_L111 = ((((Str("https://github.com/erg-lang/erg/releases/download/") + (str__)(latest_version_L87,)) + Str("/")) + (str__)(Str(filename_L106),)) + Str(""))
+(print)(((Str("Downloading ") + (str__)(Str(url_L111),)) + Str(" ...")),)
+stream_L114 = (request_L11_C1).urlopen(Str(url_L111),)
 (print)(((Str("Extracting ") + (str__)(Str(filename_L106),)) + Str(" ...")),)
-if_tmp_func_18__()
-erg_tmp_bin_L126 = (erg_tmp_dir_L17).joinpath(Str(ext_L21),)
-(discard__)((su_L7).move(erg_tmp_bin_L126,erg_bin_L25,),)
+if_tmp_func_16__()
+erg_tmp_bin_L127 = (erg_tmp_dir_L17).joinpath(Str(ext_L21),)
+(discard__)((su_L7).move(erg_tmp_bin_L127,erg_bin_L25,),)
 (discard__)((su_L7).move((erg_tmp_dir_L17).joinpath(Str("lib"),),(erg_dir_L15).joinpath(Str("lib"),),),)
 (su_L7).rmtree(erg_tmp_dir_L17,onerror=remove_readonly__erg_proc___L28,)
 (print)(Str("erg installed successfully"),)
