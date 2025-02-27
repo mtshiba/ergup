@@ -4,7 +4,7 @@ Install the pre-built binaries of erg. Also, build and install the package manag
 
 ## requirement
 
-Python 3
+Python 3 (>=3.7)
 
 ## supported platforms
 
